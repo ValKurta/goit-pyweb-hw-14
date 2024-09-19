@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request, Form
+from fastapi import APIRouter, HTTPException, Depends, status, Security, BackgroundTasks, Request, Form, File, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 from database.db import get_db
@@ -9,11 +9,12 @@ from services.email import send_email
 import logging
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from services.redis_cache import get_redis, redis_client
 import json
 from database.models import User
+import cloudinary.uploader
+
 
 router = APIRouter(prefix='/auth', tags=["auth"])
 security = HTTPBearer()
@@ -215,3 +216,17 @@ async def password_reset_confirm_post(request: Request, token: str, password: st
 @router.get("/password_reset_complete")
 async def password_reset_complete(request: Request):
     return templates.TemplateResponse("users/password_reset_complete.html", {"request": request})
+
+@router.post("/upload_avatar")
+async def upload_avatar(file: UploadFile = File(...),
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(auth_service.get_current_user)):
+
+    upload_result = await upload_image_to_cloudinary(file)
+
+    if upload_result:
+        current_user.avatar = upload_result['secure_url']
+        db.commit()
+        return {"msg": "Avatar updated successfully", "avatar_url": current_user.avatar}
+    else:
+        return {"msg": "Avatar upload failed"}, 400
