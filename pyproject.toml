@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "project-1"
+version = "0.1.0"
+description = ""
+authors = ["ValKurta <valentyn.kurta@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.114.0"
+sqlalchemy = {extras = ["asyncpg"], version = "^2.0.34"}
+asyncpg = "^0.29.0"
+libgravatar = "^1.0.4"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["argon2"], version = "^1.7.4"}
+python-multipart = "^0.0.9"
+uvicorn = "^0.30.6"
+alembic = "^1.13.2"
+python-dotenv = "^1.0.1"
+pyotp = "^2.9.0"
+qrcode = {extras = ["pil"], version = "^7.4.2"}
+twilio = "^9.3.0"
+pydantic = {extras = ["email"], version = "^2.9.1"}
+fastapi-mail = "^1.4.1"
+jinja2 = "^3.1.4"
+redis = "^5.0.8"
+aioredis = "1.3.1"
+cloudinary = "^1.41.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
