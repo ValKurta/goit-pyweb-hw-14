@@ -1,0 +1,17 @@
+version: "1.0"
+
+volumes:
+  db-app:
+
+services:
+  db-app:
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-app:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
