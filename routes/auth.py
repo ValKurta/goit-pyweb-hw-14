@@ -11,8 +11,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
-from services.redis_cache import get_redis
+from services.redis_cache import get_redis, redis_client
 import json
+from database.models import User
 
 router = APIRouter(prefix='/auth', tags=["auth"])
 security = HTTPBearer()
@@ -52,9 +53,22 @@ async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Re
 async def login(request: Request):
     return templates.TemplateResponse("users/login.html", {"request": request, "form": {}})
 
+
 @router.post("/login", response_model=TokenModel)
-async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = await repository_users.get_user_by_email(body.username, db)
+async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db), redis=Depends(get_redis)):
+    cached_user = await redis.get(body.username)
+
+    if cached_user:
+        print("User found in cache")
+        user_data = json.loads(cached_user)
+        user = User(**user_data)
+    else:
+        user = await repository_users.get_user_by_email(body.username, db)
+        if user:
+            await redis.set(body.username, json.dumps(user.as_dict()), ex=3600)
+            print("User added to cache")
+
+    #user = await repository_users.get_user_by_email(body.username, db)
 
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")

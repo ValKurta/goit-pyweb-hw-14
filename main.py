@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-
+from services.redis_cache import get_redis
 
 
 load_dotenv()
@@ -19,6 +19,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    redis = await get_redis()
+    await redis.flushall()
+    print("Redis cache cleared at startup.")
 
 app.include_router(auth_router)
 
