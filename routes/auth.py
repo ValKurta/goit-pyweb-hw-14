@@ -57,6 +57,20 @@ async def login(request: Request):
 
 @router.post("/login", response_model=TokenModel)
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db), redis=Depends(get_redis)):
+    """
+    Handles user login.
+
+    Parameters:
+        body (OAuth2PasswordRequestForm): The login credentials provided by the user.
+        db (Session): The database session.
+        redis: The Redis client for caching.
+
+    Returns:
+        RedirectResponse: Redirects the user to the /dashboard page upon successful login.
+
+    Raises:
+        HTTPException: If the email or password is invalid, or if the email is not confirmed.
+    """
     cached_user = await redis.get(body.username)
 
     if cached_user:
@@ -154,6 +168,12 @@ async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, r
 
 @router.get("/dashboard")
 async def dashboard():
+    """
+    Returns a welcome message for the user dashboard.
+
+    Returns:
+        dict: A welcome message for the user.
+    """
     return {"message": "Welcome to your dashboard!"}
 
 @router.get("/password_reset")

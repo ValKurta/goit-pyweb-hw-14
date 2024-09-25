@@ -1,18 +1,17 @@
-from libgravatar import Gravatar
 from sqlalchemy.orm import Session
-from typing import Type
-import logging
+from sqlalchemy.future import select
 from database.models import User
 from database.schemas import UserModel
-from sqlalchemy.future import select
+import logging
 
 
 async def get_user_by_email(email: str, db: Session):
     result = await db.execute(select(User).filter(User.email == email))
-    return result.scalars().first()
+    scalar_result = result.scalars()
+    return scalar_result.first()
 
 async def create_user(user: UserModel, db: Session):
-    new_user = User(**user.dict(), totp_secret=None)
+    new_user = User(**user.model_dump(), totp_secret=None)
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
@@ -24,7 +23,8 @@ async def update_token(user: User, token: str | None, db: Session) -> None:
 
 async def get_user_by_id(user_id: int, db: Session):
     result = await db.execute(select(User).filter(User.id == user_id))
-    return result.scalars().first()
+    scalar_result = result.scalars()
+    return scalar_result.first()
 
 async def update_totp_secret(user: User, totp_secret: str, db: Session):
     user.totp_secret = totp_secret
@@ -43,7 +43,7 @@ async def get_user_from_data(data: dict) -> User:
         username=data["username"],
         email=data["email"],
         password=data["password"],
-        crated_at=data.get("crated_at"),
+        created_at=data.get("created_at"),
         avatar=data.get("avatar"),
         refresh_token=data.get("refresh_token"),
         totp_secret=data.get("totp_secret"),

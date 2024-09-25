@@ -9,6 +9,12 @@ SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, autocommit=False, 
 
 
 async def get_db():
+    """
+    Retrieves the database session for request processing.
+
+    Returns:
+        Session: The async SQLAlchemy database session.
+    """
     async with SessionLocal() as session:
         try:
             yield session
